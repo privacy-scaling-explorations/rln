@@ -1,54 +1,100 @@
 include "./tree/incrementalMerkleTree.circom";
 include "../node_modules/circomlib/circuits/poseidon.circom";
 
+template HasherAB() {
+  signal input a;
+  signal input b;
+  signal output out;
+
+  component hasher = Poseidon(2);
+  hasher.inputs[0] <== a;
+  hasher.inputs[1] <== b;
+
+  out <== hasher.out;
+}
+
 template CalculateIdentityCommitment() {
-    signal input identity_secret;
+    signal input secret;
     signal output out;
 
     component hasher = Poseidon(1);
-    hasher.inputs[0] <== identity_secret;
+    hasher.inputs[0] <== secret;
 
     out <== hasher.out;
 }
 
-template CalculateA1() {
-    signal input a_0;
-    signal input epoch;
-    signal input rln_identifier;
 
-    signal output out;
+template CalculateA0(limit) {
+  signal input identity_secret[limit];
+  signal output out;
 
-    component hasher = Poseidon(3);
-    hasher.inputs[0] <== a_0;
-    hasher.inputs[1] <== epoch;
-    hasher.inputs[2] <== rln_identifier;
+  component hasher = Poseidon(limit);
+  var i;
+  for(i=0;i<limit;i++) {
+    hasher.inputs[i] <== identity_secret[i];
+  }
 
-    out <== hasher.out;
+  out <== hasher.out;
 }
 
+template CalculateOutput(limit) {
+  signal input a0;
+  signal input identity_secret[limit];
+  signal input epoch;
+  signal input x;
+  signal input rln_identifier;
+
+  signal output out;
+  signal output nullifier;
+
+  signal degrees[limit];
+  signal values[limit];
+  component coeffs[limit];
+  component nullifierHash = Poseidon(limit + 1);
+
+  degrees[0] <== x;
+  coeffs[0] = HasherAB();
+  coeffs[0].a <== identity_secret[0];
+  coeffs[0].b <== epoch;
+
+  values[0] <== coeffs[0].out * degrees[0] + a0;
+  nullifierHash.inputs[0] <== coeffs[0].out;
+
+  var i;
+  for(i = 1; i < limit; i++) {
+
+    degrees[i] <== x * degrees[i - 1];
+
+    coeffs[i] = HasherAB();
+    coeffs[i].a <== identity_secret[i];
+    coeffs[i].b <== epoch;
+
+    values[i] <== coeffs[i].out * degrees[i] + values[i - 1];
+    nullifierHash.inputs[i] <== coeffs[i].out;
+  }
+
+  component rln_identifier_hash = Poseidon(1);
+  rln_identifier_hash.inputs[0] <-- rln_identifier;
+
+  nullifierHash.inputs[limit] <== rln_identifier_hash.out;
+
+  out <== values[limit-1];
+  nullifier <== nullifierHash.out;
+}
 
 template CalculateNullifier() {
-    signal input a_1;
-    signal input rln_identifier;
-    signal output out;
-
-    component hasher = Poseidon(2);
-    hasher.inputs[0] <== a_1;
-    hasher.inputs[1] <== rln_identifier;
-
     out <== hasher.out;
 }
 
 
 
-template RLN(n_levels) {
+template RLN(n_levels, limit) {
     //constants
     var LEAVES_PER_NODE = 2;
     var LEAVES_PER_PATH_LEVEL = LEAVES_PER_NODE - 1;
 
-
     //private signals
-    signal private input identity_secret;
+    signal private input identity_secret[limit];
     signal private input path_elements[n_levels][LEAVES_PER_PATH_LEVEL];
     signal private input identity_path_index[n_levels];
 
@@ -62,11 +108,16 @@ template RLN(n_levels) {
     signal output root;
     signal output nullifier;
 
-    component identity_commitment = CalculateIdentityCommitment();
-    identity_commitment.identity_secret <== identity_secret;
-
     var i;
     var j;
+
+    component A0 = CalculateA0(limit);
+    for(i = 0; i < limit; i++) {
+      A0.identity_secret[i] <== identity_secret[i];
+    }
+
+    component identity_commitment = CalculateIdentityCommitment();
+    identity_commitment.secret <== A0.out;
     component inclusionProof = MerkleTreeInclusionProof(n_levels);
     inclusionProof.leaf <== identity_commitment.out;
 
@@ -79,22 +130,16 @@ template RLN(n_levels) {
 
     root <== inclusionProof.root;
 
-    // 2. Part
-    // Line Equation Constaints
-    // a_1 = hash(a_0, epoch)
-    // share_y == a_0 + a_1 * share_x
-    component a_1 = CalculateA1();
-    a_1.a_0 <== identity_secret;
-    a_1.epoch <== epoch;
-    a_1.rln_identifier <== rln_identifier;
+    component PX = CalculateOutput(limit);
+    for (i = 0; i < limit; i++) {
+      PX.identity_secret[i] <== identity_secret[i];
+    }
+    PX.epoch <== epoch;
+    PX.a0 <== A0.out;
+    PX.x <== x;
+    PX.rln_identifier <== rln_identifier;
 
-    y <== identity_secret + a_1.out * x;
-    component calculateNullifier = CalculateNullifier();
-    calculateNullifier.a_1 <== a_1.out;
-    calculateNullifier.rln_identifier <== rln_identifier;
+    y <== PX.out;
+    nullifier <== PX.nullifier;
 
-    nullifier <== calculateNullifier.out;
-
-    signal rln_identifier_squared;
-    rln_identifier_squared <== rln_identifier * rln_identifier;
 }

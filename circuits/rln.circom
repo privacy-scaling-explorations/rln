@@ -1,3 +1,3 @@
 include "./rln-base.circom";
 
-component main = RLN(15);
+component main = RLN(15, 3);

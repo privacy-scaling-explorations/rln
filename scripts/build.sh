@@ -20,7 +20,7 @@ npx snarkjs zkey contribute rln_0000.zkey rln_final.zkey
 
 npx snarkjs zkey export verificationkey rln_final.zkey verification_key.json
 
-snarkjs zkey export solidityverifier rln_final.zkey verifier.sol
+npx snarkjs zkey export solidityverifier rln_final.zkey verifier.sol
 
 # mv verifier.sol ../../contracts/contracts/Verifier.sol
 
