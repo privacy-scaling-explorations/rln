@@ -16,14 +16,12 @@ template CalculateIdentityCommitment() {
 template CalculateA1() {
     signal input a_0;
     signal input epoch;
-    signal input rln_identifier;
 
     signal output out;
 
-    component hasher = Poseidon(3);
+    component hasher = Poseidon(2);
     hasher.inputs[0] <== a_0;
     hasher.inputs[1] <== epoch;
-    hasher.inputs[2] <== rln_identifier;
 
     out <== hasher.out;
 }
@@ -40,7 +38,6 @@ template CalculateNullifier() {
 
     out <== hasher.out;
 }
-
 
 
 template RLN(n_levels) {
@@ -88,7 +85,6 @@ template RLN(n_levels) {
     component a_1 = CalculateA1();
     a_1.a_0 <== identity_secret;
     a_1.epoch <== epoch;
-    a_1.rln_identifier <== rln_identifier;
 
     y <== identity_secret + a_1.out * x;
     component calculateNullifier = CalculateNullifier();
