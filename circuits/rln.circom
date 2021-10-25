@@ -1,3 +1,5 @@
+pragma circom 2.0.0;
+
 include "./rln-base.circom";
 
-component main = RLN(15);
+component main {public [x, epoch, rln_identifier ]} = RLN(15);

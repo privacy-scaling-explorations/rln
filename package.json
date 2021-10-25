@@ -17,7 +17,7 @@
     "url": "https://github.com/akinovak/rln-circuits/issues"
   },
   "homepage": "https://github.com/akinovak/rln-circuits#readme",
-  "dependencies": {
-    "circomlib": "^0.5.3"
+  "devDependencies": {
+    "circomlib": "^2.0.1"
   }
 }

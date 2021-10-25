@@ -1,4 +1,6 @@
-include "./tree/incrementalMerkleTree.circom";
+pragma circom 2.0.0;
+
+include "./incrementalMerkleTree.circom";
 include "../node_modules/circomlib/circuits/poseidon.circom";
 
 template CalculateIdentityCommitment() {
@@ -48,9 +50,9 @@ template RLN(n_levels) {
 
 
     //private signals
-    signal private input identity_secret;
-    signal private input path_elements[n_levels][LEAVES_PER_PATH_LEVEL];
-    signal private input identity_path_index[n_levels];
+    signal input identity_secret;
+    signal input path_elements[n_levels][LEAVES_PER_PATH_LEVEL];
+    signal input identity_path_index[n_levels];
 
     //public signals
     signal input x; // x is actually just the signal hash
@@ -94,7 +96,4 @@ template RLN(n_levels) {
     calculateNullifier.rln_identifier <== rln_identifier;
 
     nullifier <== calculateNullifier.out;
-
-    signal rln_identifier_squared;
-    rln_identifier_squared <== rln_identifier * rln_identifier;
 }
