@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/akinovak/rln-circuits#readme",
   "dependencies": {
-    "circomlib": "^0.5.3",
-    "snarkjs": "^0.4.6"
+    "circomlib": "^2.0.1",
+    "snarkjs": "^0.4.10"
   }
 }
