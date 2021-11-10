@@ -1,6 +1,8 @@
 # rln-circuits
 Rate Limit Nullifier implemented in circom
 
+## Circuit specs:
+https://hackmd.io/7GR5Vi28Rz2EpEmLK0E0Aw
 
 ## Benchmarks
 
