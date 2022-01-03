@@ -13,7 +13,16 @@ else
     wget https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_14.ptau
 fi
 
-circom ../circuits/rln.circom --r1cs --wasm --sym
+circuit_path=""
+if [ "$1" = "rln" ]; then 
+    circuit_path="../circuits/rln.circom"
+elif [ "$1" = "nrln" ]; then
+    circuit_path="../circuits/nrln.circom"
+fi
+
+echo "Circuit path: $circuit_path"
+
+circom $circuit_path --r1cs --wasm --sym
 snarkjs r1cs export json rln.r1cs rln.r1cs.json
 
 snarkjs groth16 setup rln.r1cs powersOfTau28_hez_final_14.ptau rln_0000.zkey
