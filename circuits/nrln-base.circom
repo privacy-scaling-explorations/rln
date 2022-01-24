@@ -76,7 +76,7 @@ template CalculateOutput(limit) {
   }
 
   component rln_identifier_hash = Poseidon(1);
-  rln_identifier_hash.inputs[0] <-- rln_identifier;
+  rln_identifier_hash.inputs[0] <== rln_identifier;
 
   nullifierHash.inputs[limit] <== rln_identifier_hash.out;
 
