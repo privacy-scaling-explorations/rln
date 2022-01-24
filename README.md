@@ -1,18 +1,26 @@
-# rln-circuits
-Rate Limit Nullifier implemented in circom
+# RLN Circuits
 
-## Circuit specs:
+Rate Limit Nullifier implemented in Circom.
+
+## Circuit specs
+
 https://hackmd.io/7GR5Vi28Rz2EpEmLK0E0Aw
+
+## Running
+
+``` sh
+./scripts./build-circuits.sh <rln|nrln>
+```
 
 ## Benchmarks
 
-##### System spec:
-Processor: `2,6 GHz 6-Core Intel Core i7`
-Memory: `16 GB 2667 MHz DDR4`
+System specs:
+- Processor: `2,6 GHz 6-Core Intel Core i7`
+- Memory: `16 GB 2667 MHz DDR4`
 
---- 
-`Proof generation time (with witness)` - time to generate witness from input and write to file included
-`Proof generation time (without witness)` - time to generate witness from input and write to file excluded
+- `Proof generation time (with witness)` - time to generate witness from input and write to file included
+
+- `Proof generation time (without witness)` - time to generate witness from input and write to file excluded
 
 | Curve, Hasher | Set Size | Num constraints | Proof generation time (with witness) | Proof generation time (without witness) | Proof verification time |  Prover Key Size   | 
 | - | - | - | - | - | - | - |
