@@ -8,6 +8,9 @@ https://hackmd.io/7GR5Vi28Rz2EpEmLK0E0Aw
 
 ## Running
 
+- Depends on [Circom](https://docs.circom.io/getting-started/installation/)
+- Depends on [Snarkjs](https://www.npmjs.com/package/snarkjs) `npm i -g snarkjs`
+
 ``` sh
 ./scripts./build-circuits.sh <rln|nrln>
 ```
