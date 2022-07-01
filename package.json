@@ -1,23 +1,24 @@
 {
   "name": "rln-circuits",
   "version": "1.0.0",
-  "description": "Rate Limit Nullifier implemented in circom",
-  "main": "index.js",
+  "description": "Rate-Limiting Nullifier implemented in circom",
   "scripts": {
+    "build": "bash scripts/build-circuits.sh rln",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/akinovak/rln-circuits.git"
+    "url": "git+https://"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/akinovak/rln-circuits/issues"
+    "url": ""
   },
-  "homepage": "https://github.com/akinovak/rln-circuits#readme",
+  "homepage": "#readme",
   "devDependencies": {
-    "circomlib": "^2.0.1"
+    "circomlib": "^2.0.5",
+    "snarkjs": "^0.4.22"
   }
 }

@@ -26,7 +26,6 @@ template CalculateA1() {
     out <== hasher.out;
 }
 
-
 template CalculateNullifier() {
     signal input a_1;
     signal input rln_identifier;
@@ -39,12 +38,10 @@ template CalculateNullifier() {
     out <== hasher.out;
 }
 
-
 template RLN(n_levels) {
     //constants
     var LEAVES_PER_NODE = 2;
     var LEAVES_PER_PATH_LEVEL = LEAVES_PER_NODE - 1;
-
 
     //private signals
     signal input identity_secret;

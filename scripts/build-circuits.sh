@@ -1,11 +1,6 @@
 #!/bin/bash
 set -e
 
-if [[ $# -eq 0 ]] ; then
-    echo "Please pass 'rln' or 'nrln' as argument."
-    exit 1
-fi
-
 cd "$(dirname "$0")"
 
 mkdir -p ../build/contracts
@@ -23,17 +18,30 @@ else
 fi
 
 circuit_path=""
-if [ "$1" = "rln" ]; then 
+if [ "$1" = "rln" ]; then
     circuit_path="../circuits/rln.circom"
 elif [ "$1" = "nrln" ]; then
     circuit_path="../circuits/nrln.circom"
 else
-    echo "Unrecognized argument, please use 'rln' or 'nrln'"
+    circuit_path="../circuits/rln.circom"
+    echo "Unrecognized argument, using 'rln' as default."
+fi
+
+echo "$PWD"
+
+if ! [ -x "$(command -v circom)" ]; then
+    echo 'Error: circom is not installed.' >&2
+    echo 'Error: please install circom: https://docs.circom.io/getting-started/installation/.' >&2
     exit 1
 fi
 
 echo "Circuit path: $circuit_path"
 
+which -a circom
+echo "-----------------"
+echo "COMPILING CIRCUIT"
+echo "-----------------"
+circom --version
 circom $circuit_path --r1cs --wasm --sym
 
 snarkjs r1cs export json rln.r1cs rln.r1cs.json

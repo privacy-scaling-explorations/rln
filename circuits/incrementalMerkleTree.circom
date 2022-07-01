@@ -28,7 +28,6 @@ template HashLeftRight() {
     hash <== hasher.out;
 }
 
-
 template MerkleTreeInclusionProof(n_levels) {
     signal input leaf;
     signal input path_index[n_levels];
