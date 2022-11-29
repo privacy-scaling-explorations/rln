@@ -13,80 +13,101 @@ template CalculateIdentityCommitment() {
     out <== hasher.out;
 }
 
-template CalculateA1() {
-    signal input a_0;
+template CalculateExternalNullifier() {
     signal input epoch;
-
-    signal output out;
-
-    component hasher = Poseidon(2);
-    hasher.inputs[0] <== a_0;
-    hasher.inputs[1] <== epoch;
-
-    out <== hasher.out;
-}
-
-template CalculateNullifier() {
-    signal input a_1;
     signal input rln_identifier;
+
     signal output out;
 
     component hasher = Poseidon(2);
-    hasher.inputs[0] <== a_1;
+    hasher.inputs[0] <== epoch;
     hasher.inputs[1] <== rln_identifier;
 
     out <== hasher.out;
 }
 
+template CalculateA1() {
+    signal input a_0;
+    signal input external_nullifier;
+
+    signal output out;
+
+    component hasher = Poseidon(2);
+    hasher.inputs[0] <== a_0;
+    hasher.inputs[1] <== external_nullifier;
+
+    out <== hasher.out;
+}
+
+template CalculateInternalNullifier() {
+    signal input a_1;
+    signal output out;
+
+    component hasher = Poseidon(1);
+    hasher.inputs[0] <== a_1;
+
+    out <== hasher.out;
+}
+
 template RLN(n_levels) {
-    //constants
+    // constants
     var LEAVES_PER_NODE = 2;
     var LEAVES_PER_PATH_LEVEL = LEAVES_PER_NODE - 1;
 
-    //private signals
+    // private signals
     signal input identity_secret;
     signal input path_elements[n_levels][LEAVES_PER_PATH_LEVEL];
     signal input identity_path_index[n_levels];
 
-    //public signals
+    // public signals
     signal input x; // x is actually just the signal hash
     signal input epoch;
     signal input rln_identifier;
 
-    //outputs
+    // outputs
     signal output y;
     signal output root;
     signal output nullifier;
 
+    // commitment calculation
     component identity_commitment = CalculateIdentityCommitment();
     identity_commitment.identity_secret <== identity_secret;
 
+    // 1. Part
+    // Merkle Tree inclusion proof
     var i;
     var j;
     component inclusionProof = MerkleTreeInclusionProof(n_levels);
     inclusionProof.leaf <== identity_commitment.out;
 
     for (i = 0; i < n_levels; i++) {
-      for (j = 0; j < LEAVES_PER_PATH_LEVEL; j++) {
-        inclusionProof.path_elements[i][j] <== path_elements[i][j];
-      }
-      inclusionProof.path_index[i] <== identity_path_index[i];
+        for (j = 0; j < LEAVES_PER_PATH_LEVEL; j++) {
+            inclusionProof.path_elements[i][j] <== path_elements[i][j];
+        }
+        inclusionProof.path_index[i] <== identity_path_index[i];
     }
 
     root <== inclusionProof.root;
 
     // 2. Part
-    // Line Equation Constaints
-    // a_1 = hash(a_0, epoch)
-    // share_y == a_0 + a_1 * share_x
+    // Line Equation Constraints
+    //
+    // external_nullifier = Poseidon([epoch, rln_identifier])
+    // a_1 = Poseidon([a_0, external_nullifier])
+    // internal_nullifier = Poseidon([a_1])
+    // 
+    // share_y == a_0 + a_1 * x
+    component external_nullifier = CalculateExternalNullifier();
+    external_nullifier.epoch <== epoch;
+    external_nullifier.rln_identifier <== rln_identifier;
+
     component a_1 = CalculateA1();
     a_1.a_0 <== identity_secret;
-    a_1.epoch <== epoch;
+    a_1.external_nullifier <== external_nullifier.out;
 
     y <== identity_secret + a_1.out * x;
-    component calculateNullifier = CalculateNullifier();
+    component calculateNullifier = CalculateInternalNullifier();
     calculateNullifier.a_1 <== a_1.out;
-    calculateNullifier.rln_identifier <== rln_identifier;
 
     nullifier <== calculateNullifier.out;
 }
