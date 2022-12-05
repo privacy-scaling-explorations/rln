@@ -56,11 +56,13 @@ For a valid signal identity commitment `q` must be exists in identity tree. Memb
 
 Secret key `a_0` which is first coefficient of a linear polynomial. 
 
-Each member _knows_ a linear polynomial for any `epoch` which is derived from secret key `a_0` and the `epoch`. So, each `epoch` there is a polynomial with different `a_1` equation but with same `a_0`.
+Each member _knows_ a linear polynomial for any `epoch` and app (`rln_identifier`) which is derived from secret key `a_0` and the `external_nullifier = hash(epoch, rln_identifier)`. 
 
 ```
 A(x) = (a_0, a_1)
-a_1 = h(a_0, epoch)
+
+external_nullifier = (epoch, rln_identifier)
+a_1 = h(a_0, external_nullifier)
 ```
 
 Each member has a secret line equation for an epoch
@@ -77,9 +79,15 @@ Note that shares used in different epochs cannot be used to derive the secret ke
 
 ### Nullifiers
 
-`epoch` is external nullfier.
+There are `external_nullifier` and `internal_nullifier`. 
 
-Internal nullifier is calculated as `nullifier = hash(a_1, rln_identifier)`. Note that `a_1` has already a secret id key ingredient `a_1` and `epoch` ingredient, so each epoch a member can signal to only one nullifier. The `rln_identifier` is a random value from a finite field, unique per RLN app, and is used for additional cross-application security - to protect the user secrets being compromised if they use the same credentials accross different RLN apps. If `rln_identifier` is not present, the user uses the same credentials and sends a different message for two different RLN apps using the same epoch, then their secret key can be revealed. With adding the `rln_identifier` field we obscure the nullifier, so this kind of attack cannot happen. The only kind of attack that is possible is if we have an entity with a global view of all messages, and they try to brute force different combinations of x and y shares for different nullifiers.
+The `external_nullifier` is required so that the user can securely use the same private key `a_0` across different RLN apps.
+
+`external_nullifier = hash(epoch, rln_identifier)`, where `rln_identifier` is a random value from a finite field, unique per RLN app.
+
+Thus, in different applications (and in different eras) with the same secret key, the user will have different values ​​of the coefficient `a_1`, as `a_1 = hash(a_0, external_nullifier)`.
+
+Internal nullifier is calculated as `nullifier = hash(a_1)` and is used as an user-id in anonymous environment.
 
 ### Circuit
 
@@ -166,7 +174,3 @@ Canonical poseidon implementation is used, as implemented in the [circomlib libr
 ### Merkle Tree implementation
 
 IncrementalQuinTree structure is used for the Membership tree. The circuits are reused from [this repository](https://github.com/appliedzkp/incrementalquintree). You can find out more details about the IncrementalQuinTree algorithm [here](https://arxiv.org/pdf/2105.06009v1.pdf).
-
-
-
-
