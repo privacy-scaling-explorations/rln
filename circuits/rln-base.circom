@@ -13,6 +13,19 @@ template CalculateIdentityCommitment() {
     out <== hasher.out;
 }
 
+template CalculateExternalNullifier() {
+    signal input epoch;
+    signal input rln_identifier;
+
+    signal output out;
+
+    component hasher = Poseidon(2);
+    hasher.inputs[0] <== epoch;
+    hasher.inputs[1] <== rln_identifier;
+
+    out <== hasher.out;
+}
+
 template CalculateA1() {
     signal input a_0;
     signal input external_nullifier;
@@ -48,7 +61,8 @@ template RLN(n_levels) {
 
     // public signals
     signal input x; // x is actually just the signal hash
-    signal input external_nullifier;
+    signal input epoch;
+    signal input rln_identifier;
 
     // outputs
     signal output y;
@@ -78,14 +92,18 @@ template RLN(n_levels) {
     // 2. Part
     // Line Equation Constraints
     //
+    // external_nullifier = Poseidon([epoch, rln_identifier])
     // a_1 = Poseidon([a_0, external_nullifier])
     // internal_nullifier = Poseidon([a_1])
     // 
     // share_y == a_0 + a_1 * x
+    component external_nullifier = CalculateExternalNullifier();
+    external_nullifier.epoch <== epoch;
+    external_nullifier.rln_identifier <== rln_identifier;
 
     component a_1 = CalculateA1();
     a_1.a_0 <== identity_secret;
-    a_1.external_nullifier <== external_nullifier;
+    a_1.external_nullifier <== external_nullifier.out;
 
     y <== identity_secret + a_1.out * x;
     component calculateNullifier = CalculateInternalNullifier();
